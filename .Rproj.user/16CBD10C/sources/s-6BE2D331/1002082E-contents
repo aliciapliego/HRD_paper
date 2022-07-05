@@ -1,0 +1,152 @@
+---
+title: "cutoff_hrdness"
+author: "Alicia Pliego"
+date: "6/7/2022"
+output: html_document
+---
+# Infering HRD cutoff
+
+```{r , echo=FALSE, warning=FALSE, message=FALSE}
+library(chromoMap)
+library(tidyverse)
+library(heatmaply)
+library(org.Hs.eg.db)
+library(dplyr)
+library(Matrix)
+library(data.table)
+library(ggplot2)
+library(dplyr)
+library(broom)
+library(cutpointr)
+library(ggpubr)
+library(cutoff)
+```
+
+
+Correlation between HRDness and CIN scores:
+```{r , include=FALSE, echo=FALSE, message=FALSE}
+cutpoint_hrd_all = read.csv('/Users/aliciapliego/Projects/HRDsarcoma/data/HRDness_TCGA_sarcoma_all.tsv', sep = '\t')
+
+```
+
+```{r  , echo=FALSE, warning=FALSE, message=FALSE, fig.width= 4, fig.height = 4, fig.align='center'}
+hist(cutpoint_hrd_all$LST, breaks=60, main="With breaks=20")
+```
+
+```{r  , echo=FALSE, warning=FALSE, message=FALSE, fig.width= 4, fig.height = 4, fig.align='center'}
+hist(cutpoint_hrd_all$TAI, breaks=60, main="With breaks=20")
+```
+
+```{r  , echo=FALSE, warning=FALSE, message=FALSE, fig.width= 4, fig.height = 4, fig.align='center'}
+hist(cutpoint_hrd_all$LOH, breaks=60, main="With breaks=20")
+```
+
+```{r  , echo=FALSE, warning=FALSE, message=FALSE, fig.width= 4, fig.height = 4, fig.align='center'}
+hist(cutpoint_hrd_all$HRDscore, breaks=60, main="With breaks=20")
+```
+
+```{r , include=FALSE, echo=FALSE, message=FALSE}
+cutpoint_data = read.csv('/Users/aliciapliego/Projects/HRDsarcoma/data/HRDness_TCGA_sarcoma_cutpoint.tsv', sep = '\t')
+cutpoint_data2<- cutpoint_data
+cutpoint_data2$cinscore <- NULL
+cutpoint_data2$Sample.ID <- NULL
+```
+
+```{r  , echo=FALSE, warning=FALSE, message=FALSE, fig.width= 4, fig.height = 4, fig.align='center'}
+#cutpoint_data2$cindex_lg <- log2(cutpoint_data2$cindex)
+hist(cutpoint_data2$cindex, breaks=30, main="With breaks=20")
+```
+
+
+```{r  , echo=FALSE, warning=FALSE, message=FALSE, fig.width= 7, fig.height = 7, fig.align='center'}
+cor.test(cutpoint_data2$HRDscore, cutpoint_data2$cindex, method=c("spearman"))
+```
+
+Since none of the variables show normal distribution, we apply Spearman correlation coefficient, which shows a positive correlation between CIN and HRD score. 
+
+There are still cases with very high CIN and very low HRD score.
+
+Is it CIN in HRDgenes? a better signature?
+
+## Asign a cutoff for CIN score
+
+HRD cin: signature of alteration in genes from the HR pathway. Using the copy number profiles, we have calculated the CIN for all the genes belonging to this HR gene list across all the samples. The sample distribution of the CIN HR signature follows a bimodal distribution model, where we can infer a cutoff value using the following formula from this protocol http://marcchoisy.free.fr/fmm/index.html . This method is used in (Trang et al. 2015).
+The confidence interval of the cutoff is computed by Monte Carlo simulations and gives 37.
+
+The data has been labeled as positive for HR cin and negative for HR cin. 
+
+Based on this values we have plotted the ROC curve and infered the Youden index in order to set a threshold for HRDness, which resulted in an  optimal value of 32.
+```{r  , echo=FALSE, warning=FALSE, message=FALSE, fig.width= 7, fig.height = 7, fig.align='center'}
+
+hrdcin= read.csv('/Users/aliciapliego/Projects/HRDsarcoma/data/HRDness_TCGA_sarcoma_cutpoint_HRDcin_v3.tsv', sep = '\t')
+#hrdcin$HRDcin_l2 <- log2(hrdcin$HRDcin)
+#write.table(hrdcin, '/Users/aliciapliego/Projects/HRDsarcoma/data/HRDness_TCGA_sarcoma_cutpoint_HRDcin_v2.tsv', sep = '\t')
+ggscatter(hrdcin, x = "HRDscore", y = "HRDcin", 
+          add = "reg.line", conf.int = TRUE, 
+          cor.coef = TRUE, cor.method = "spearman",
+          xlab = "HRDscore", ylab = "HRDcin")
+
+cor.test(hrdcin$HRDscore, hrdcin$HRDcin, method=c("spearman"))
+```
+
+```{r  , echo=FALSE, warning=FALSE, message=FALSE, fig.width= 4, fig.height = 4, fig.align='center'}
+hist(hrdcin$HRDcin,60)
+```
+
+```{r , include=FALSE, echo=FALSE, message=FALSE}
+hist(hrdcin$HRDcin,100,F,xlab="HRDcin",ylab="density",ylim=c(0,.1),
+      main=NULL,col="grey")
+lines(density(hrdcin$HRDcin),lwd=1.5,col="blue")
+```
+
+
+```{r  , echo=FALSE, warning=FALSE, message=FALSE, fig.width= 7, fig.height = 7, fig.align='center'}
+library(cutoff)
+ # Estimating the parameters of the finite mixture model:
+
+(hrdcin_out <- em(hrdcin$HRDcin,"normal","normal"))
+
+# The confidence interval of the parameter estimates:
+confint(hrdcin_out,nb=100,level=.95)
+```
+
+```{r  , echo=FALSE, warning=FALSE, message=FALSE, fig.width= 7, fig.height = 7, fig.align='center'}
+hist(hrdcin$HRDcin,20,F,xlab="CIN_HRRgenes",ylab="density",ylim=c(0,.05),main=NULL,col="grey")
+lines(hrdcin_out,lwd=1.5,col="red")
+```
+
+```{r  , echo=FALSE, warning=FALSE, message=FALSE, fig.width= 7, fig.height = 7, fig.align='center'}
+hist(hrdcin$HRDcin,25,F,xlab="CIN_HRRgenes",ylab="density",ylim=c(0,.06),main=NULL,col="grey")
+lines(hrdcin_out,lwd=1.5,col="red")
+# Estimating a cutoff value from this fitted finite mixture model:
+(cut_off <- cutoff(hrdcin_out))
+
+# Plotting it:
+polygon(c(cut_off[-1],rev(cut_off[-1])),c(0,0,.04,.05),col=rgb(0,0,1,.2),border=NA)
+abline(v=cut_off[-1],lty=2,col="blue")
+abline(v=cut_off[1],col="blue")
+
+```
+Optimal cutoff for HRDcin is 33:
+```{r , include=FALSE, echo=FALSE}
+cut_off
+```
+
+Apply cutoff to HRD data:
+
+```{r , include=FALSE, echo=FALSE, message=FALSE}
+cp <- cutpointr(hrdcin, HRDscore, cinscore, 
+                method = maximize_metric, metric = sum_sens_spec)
+```
+
+```{r , include=FALSE, echo=FALSE}
+summary(cp)
+
+```
+
+Optimal cutoff = 32 HRD
+                 
+```{r  , echo=FALSE, warning=FALSE, message=FALSE, fig.width= 7, fig.height = 7, fig.align='center'}
+plot(cp)
+```
+

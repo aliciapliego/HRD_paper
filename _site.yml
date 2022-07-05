@@ -1,0 +1,26 @@
+name: "personal-website"
+output_dir: "."
+navbar:
+  title: "HRDsarcoma" 
+  left:
+    - text: "HRD threshold"
+      href: cutoff_hrdness.html
+    - text: "Figure 1"
+      href: paper_figure1.html
+    - text: "Figure 2"
+      href: paper_figure1.html
+    - text: "Figure 3"
+      href: paper_figure1.html
+    - text: "Figure 4"
+      href: paper_figure1.html
+
+ 
+
+        
+output:
+  html_document:
+    css: style.css
+    theme: sandstone
+    highlight: default
+    include:
+      after_body: footer.html

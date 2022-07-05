@@ -1,0 +1,926 @@
+---
+title: "Figure 1 Paper HRDness"
+author: "Alicia Pliego"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    toc_collapsed: true
+    toc_depth: 3
+    number_sections: true
+    theme: sandstone
+---
+<style>
+body {
+text-align: justify}
+</style>
+
+```{r setup, include=FALSE, echo=FALSE, message=FALSE}
+library(CINmetrics)
+library(TCGAbiolinks)
+library(heatmaply)
+library(GenomicRanges)
+library(AnnotationHub)
+library(pd.genomewidesnp.6)
+library(rtracklayer)
+library(biovizBase) #needed for stain information
+library(CINdex)
+library(IRanges)
+library(TxDb.Hsapiens.UCSC.hg18.knownGene)
+library(Homo.sapiens)
+library(DT)
+library(plotly)
+```
+
+
+# HRDness 
+
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+
+df_sarcoma_dv = read.csv('/Users/aliciapliego/Projects/HRDsarcoma/data/HRD_results_subgroupsSarcoma.tsv', sep = '\t', header= TRUE)
+```
+
+HRD scores (TAI, LST and LOH) were computed using the R package (scarHRD) on the publicly available data from allele specific copy numbers from the TCGA consortium. 
+
+
+## TCGA LOH in sarcoma
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width= 7, fig.height = 7, fig.align='center'}
+colors <- c("#A6CEE3", "#1F78B4", "#B2DF8A", "#33A02C", "#FB9A99", "#E31A1C", "#FDBF6F", "#FF7F00" ,"#CAB2D6", "#6A3D9A" ,"#FFFF99", "#B15928")
+fig <- plot_ly(df_sarcoma_dv, y = ~LOH, color = ~Type, colors= colors, type = "box",  text = df_sarcoma_dv$Case_ID, notched=TRUE) %>%
+layout(
+     xaxis = list(title = "",
+     categoryorder = "array",
+     categoryarray = c('HGSOC',
+                         'TNBC',
+                         'CRC',
+                         'UPS',
+                         'MFS',
+                         'OS',
+                         'uLMS',
+                         'MPNST',
+                         'LMS',
+                         'ddLPS',
+                         'SS',
+                         'DT'), tickangle = -45), yaxis = list( range = c(0,40))
+)
+
+fig
+```
+
+## TCGA LST in sarcoma
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width= 7, fig.height = 7, fig.align='center'}
+fig <- plot_ly(df_sarcoma_dv, y = ~LST, color = ~Type, type = "box",colors= colors,  text = df_sarcoma_dv$Case_ID, notched=TRUE) %>%
+layout(
+     xaxis = list(title = "",
+     categoryorder = "array",
+     categoryarray = c('HGSOC',
+                         'TNBC',
+                         'CRC',
+                         'UPS',
+                         'MFS',
+                         'OS',
+                         'uLMS',
+                         'MPNST',
+                         'LMS',
+                         'ddLPS',
+                         'SS',
+                         'DT'),tickangle = -45), yaxis = list( range = c(0,40))
+)
+
+
+fig
+```
+
+## TCGA TAI in sarcoma
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width= 7, fig.height = 7, fig.align='center'}
+fig <- plot_ly(df_sarcoma_dv, y = ~TAI, color = ~Type, type = "box", colors= colors, text = df_sarcoma_dv$Case_ID, notched=TRUE) %>%
+layout(
+     xaxis = list(title = "",
+     categoryorder = "array",
+     categoryarray = c('HGSOC',
+                         'TNBC',
+                         'CRC',
+                         'UPS',
+                         'MFS',
+                         'OS',
+                         'uLMS',
+                         'MPNST',
+                         'LMS',
+                         'ddLPS',
+                         'SS',
+                         'DT'),tickangle = -45), yaxis = list( range = c(0,40))
+
+)
+
+fig
+```
+
+## TCGA HRDscore in sarcoma
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width= 7, fig.height = 7, fig.align='center'}
+fig <- plot_ly(df_sarcoma_dv, y = ~HRDscore, color = ~Type, type = "box", colors= colors, text = df_sarcoma_dv$Case_ID, notched=TRUE) %>%
+layout(
+     xaxis = list(title = "",
+     categoryorder = "array",
+     categoryarray = c('HGSOC',
+                         'TNBC',
+                         'CRC',
+                         'UPS',
+                         'MFS',
+                         'OS',
+                         'uLMS',
+                         'MPNST',
+                         'LMS',
+                         'ddLPS',
+                         'SS',
+                         'DT'), tickangle = -45)
+)
+
+fig
+```
+
+# CINdex
+
+Data has been scaled grouped by sarcoma type, divided by the number of cases by sarcoma type and scaled by columns.
+
+## Heatmap
+
+```{r , include=FALSE, echo=FALSE, message=FALSE}
+#Edit results in python and annotate them and add files back here
+cindex_results_sum_sarc_grp_tmr <- read.table('/Users/aliciapliego/Projects/HRDsarcoma/data/cindex/cindex_all_v1.tsv', sep = '\t', header = TRUE, check.names = FALSE)
+
+rownames(cindex_results_sum_sarc_grp_tmr) <- cindex_results_sum_sarc_grp_tmr$Sample.ID
+cindex_results_sum_sarc_grp_tmr$Sample.ID <- NULL
+
+cindex_results_sum_sarc_grp_tmr_meta <- read.table('/Users/aliciapliego/Projects/HRDsarcoma/data/cindex/cindex_all_meta_v1.tsv', sep = '\t', header = TRUE)
+
+cindex_results_sum_sarc_grp_scaled = scale(cindex_results_sum_sarc_grp_tmr)
+```
+
+```{r , include=FALSE, echo=FALSE, message=FALSE}
+library(dplyr)
+colors <- c("#A6CEE3", "#1F78B4", "#B2DF8A", "#33A02C", "#FB9A99", "#E31A1C", "#FDBF6F", "#FF7F00" ,"#CAB2D6", "#6A3D9A" ,"#FFFF99", "#B15928")
+
+Tumor_type = c('HGSOC',
+                         'TNBC',
+                         'CRC',
+                         'UPS',
+                         'MFS',
+                         'OS',
+                         'uLMS',
+                         'MPNST',
+                         'LMS',
+                         'ddLPS',
+                         'SS',
+                         'DT')
+names(colors) <- Tumor_type
+
+colors_df <- as.data.frame(colors)
+colors_df$Tumor_type <- rownames(colors_df)
+colors_tumor <- inner_join(colors_df,cindex_results_sum_sarc_grp_tmr_meta, by = "Tumor_type")
+
+hrdcolors <- c("#EEA236FF","#46B8DAFF")
+names(hrdcolors) <- c("High","Low")
+hrdcolors_df <- as.data.frame(hrdcolors)
+hrdcolors_df$HRDscore <- rownames(hrdcolors_df)
+
+colors_tumor_hrd <- inner_join(colors_tumor,hrdcolors_df, by = "HRDscore")
+#rownames(colors_tumor_hrd) <- colors_tumor_hrd$Tumor_type
+
+list_tumor_colors <- c(colors_tumor_hrd$colors)
+names(list_tumor_colors) <- colors_tumor_hrd$Tumor_type
+
+list_hrd_colors <- c(colors_tumor_hrd$hrdcolors)
+names(list_hrd_colors) <- colors_tumor_hrd$HRDscore
+```
+
+### Heatmap with boxplot
+
+```{r , echo=FALSE, warning=FALSE, message=FALSE, fig.width= 7, fig.height = 7, fig.align='center'}
+
+library(ComplexHeatmap)
+
+
+ha <- HeatmapAnnotation(df = cindex_results_sum_sarc_grp_tmr_meta,
+  col = list(Tumor_type = list_tumor_colors, 
+             HRDscore = list_hrd_colors))
+
+ha_boxplot = HeatmapAnnotation(boxplot = anno_boxplot(t(cindex_results_sum_sarc_grp_scaled), axis = TRUE))
+
+Heatmap(t(cindex_results_sum_sarc_grp_scaled), 
+        name = "CINscore", #title of legend
+        column_title = "TCGA CINdex", row_title = "Chromosome",
+        cluster_columns = TRUE,
+        cluster_rows =   FALSE,
+        top_annotation = ha,bottom_annotation = ha_boxplot,
+        row_names_gp = gpar(fontsize = 7) # Text size for row names
+        ) 
+
+#draw(ht, padding = unit(c(4, 2, 2, 2), "mm"))
+```
+
+### Heatmap without boxplot
+
+```{r , echo=FALSE, warning=FALSE, message=FALSE, fig.width= 7, fig.height = 7, fig.align='center'}
+
+library(ComplexHeatmap)
+
+
+ha <- rowAnnotation(df = cindex_results_sum_sarc_grp_tmr_meta,
+  col = list(Tumor_type = list_tumor_colors, 
+             HRDscore = list_hrd_colors))
+
+#ha_boxplot = HeatmapAnnotation(boxplot = anno_boxplot(t(cindex_results_sum_sarc_grp_tmr), axis = TRUE))
+
+Heatmap(cindex_results_sum_sarc_grp_scaled, 
+        name = "CINscore", #title of legend
+        column_title = "TCGA CINdex", row_title = "",
+        cluster_columns = FALSE,
+        cluster_rows =   FALSE,
+        right_annotation = ha,
+        row_names_gp = gpar(fontsize = 7) # Text size for row names
+        ) 
+
+#draw(ht, padding = unit(c(4, 2, 2, 2), "mm"))
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width= 7, fig.height = 7, fig.align='center'}
+library(reshape)
+cindex_results_sum_sarc_grp_tmr2 <- as.data.frame(cindex_results_sum_sarc_grp_tmr)
+cindex_results_sum_sarc_grp_tmr2$HRDscore <- cindex_results_sum_sarc_grp_tmr_meta$HRDscore
+cindex_results_sum_sarc_grp_tmr2$Tumor_type <- cindex_results_sum_sarc_grp_tmr_meta$Tumor_type
+mdata <- melt(cindex_results_sum_sarc_grp_tmr2, id=c("HRDscore","Tumor_type"))
+mdata$variable <- NULL
+
+fig <- plot_ly(mdata, x =~Tumor_type, y = ~value, color = ~HRDscore,type = "box", notched=TRUE) %>%
+layout(boxmode= 'group',
+     yaxis = list(range=c(0,160), title = "CIN score"),
+     xaxis = list(title = "",
+     categoryorder = "array",
+     categoryarray = c('HGSOC',
+                         'TNBC',
+                         'CRC',
+                         'UPS',
+                         'MFS',
+                         'uLMS',
+                         'MPNST',
+                         'LMS',
+                         'ddLPS',
+                         'SS',
+                         'DT'), tickangle = -45)
+)
+
+fig
+```
+
+# Amplifications 
+
+```{r , include=FALSE, echo=FALSE, message=FALSE}
+#Edit results in python and annotate them and add files back here
+cindex_results_sum_sarc_grp_tmr <- read.table('/Users/aliciapliego/Projects/HRDsarcoma/data/cindex/cindex_all_amp_v1.tsv', sep = '\t', header = TRUE, check.names = FALSE)
+
+rownames(cindex_results_sum_sarc_grp_tmr) <- cindex_results_sum_sarc_grp_tmr$Sample.ID
+cindex_results_sum_sarc_grp_tmr$Sample.ID <- NULL
+
+cindex_results_sum_sarc_grp_tmr_meta <- read.table('/Users/aliciapliego/Projects/HRDsarcoma/data/cindex/cindex_amp_meta_v1.tsv', sep = '\t', header = TRUE)
+
+cindex_results_sum_sarc_grp_scaled = scale(cindex_results_sum_sarc_grp_tmr)
+```
+
+```{r , include=FALSE, echo=FALSE, message=FALSE}
+library(dplyr)
+colors <- c("#A6CEE3", "#1F78B4", "#B2DF8A", "#33A02C", "#FB9A99", "#E31A1C", "#FDBF6F", "#FF7F00" ,"#CAB2D6", "#6A3D9A" ,"#FFFF99", "#B15928")
+
+Tumor_type = c('HGSOC',
+                         'TNBC',
+                         'CRC',
+                         'UPS',
+                         'MFS',
+                         'OS',
+                         'uLMS',
+                         'MPNST',
+                         'LMS',
+                         'ddLPS',
+                         'SS',
+                         'DT')
+names(colors) <- Tumor_type
+
+colors_df <- as.data.frame(colors)
+colors_df$Tumor_type <- rownames(colors_df)
+colors_tumor <- inner_join(colors_df,cindex_results_sum_sarc_grp_tmr_meta, by = "Tumor_type")
+
+hrdcolors <- c("#EEA236FF","#46B8DAFF")
+names(hrdcolors) <- c("High","Low")
+hrdcolors_df <- as.data.frame(hrdcolors)
+hrdcolors_df$HRDscore <- rownames(hrdcolors_df)
+
+colors_tumor_hrd <- inner_join(colors_tumor,hrdcolors_df, by = "HRDscore")
+#rownames(colors_tumor_hrd) <- colors_tumor_hrd$Tumor_type
+
+list_tumor_colors <- c(colors_tumor_hrd$colors)
+names(list_tumor_colors) <- colors_tumor_hrd$Tumor_type
+
+list_hrd_colors <- c(colors_tumor_hrd$hrdcolors)
+names(list_hrd_colors) <- colors_tumor_hrd$HRDscore
+```
+
+### Heatmap with boxplot
+
+```{r , echo=FALSE, warning=FALSE, message=FALSE, fig.width= 7, fig.height = 7, fig.align='center'}
+
+library(ComplexHeatmap)
+
+
+ha <- HeatmapAnnotation(df = cindex_results_sum_sarc_grp_tmr_meta,
+  col = list(Tumor_type = list_tumor_colors, 
+             HRDscore = list_hrd_colors))
+
+ha_boxplot = HeatmapAnnotation(boxplot = anno_boxplot(t(cindex_results_sum_sarc_grp_scaled), axis = TRUE))
+
+Heatmap(t(cindex_results_sum_sarc_grp_scaled), 
+        name = "CINscore", #title of legend
+        column_title = "TCGA Amplifications", row_title = "Chromosome",
+        cluster_columns = TRUE,
+        cluster_rows =   FALSE,
+        top_annotation = ha,bottom_annotation = ha_boxplot,
+        row_names_gp = gpar(fontsize = 7) # Text size for row names
+        ) 
+
+#draw(ht, padding = unit(c(4, 2, 2, 2), "mm"))
+```
+
+### Heatmap without boxplot
+
+```{r , echo=FALSE, warning=FALSE, message=FALSE, fig.width= 7, fig.height = 7, fig.align='center'}
+
+library(ComplexHeatmap)
+
+
+ha <- rowAnnotation(df = cindex_results_sum_sarc_grp_tmr_meta,
+  col = list(Tumor_type = list_tumor_colors, 
+             HRDscore = list_hrd_colors))
+
+#ha_boxplot = HeatmapAnnotation(boxplot = anno_boxplot(t(cindex_results_sum_sarc_grp_tmr), axis = TRUE))
+
+Heatmap(cindex_results_sum_sarc_grp_scaled, 
+        name = "CINscore", #title of legend
+        column_title = "TCGA Amplifications", row_title = "",
+        cluster_columns = FALSE,
+        cluster_rows =   FALSE,
+        right_annotation = ha,
+        row_names_gp = gpar(fontsize = 7) # Text size for row names
+        ) 
+
+#draw(ht, padding = unit(c(4, 2, 2, 2), "mm"))
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width= 7, fig.height = 7, fig.align='center'}
+library(reshape)
+cindex_results_sum_sarc_grp_tmr2 <- as.data.frame(cindex_results_sum_sarc_grp_tmr)
+cindex_results_sum_sarc_grp_tmr2$HRDscore <- cindex_results_sum_sarc_grp_tmr_meta$HRDscore
+cindex_results_sum_sarc_grp_tmr2$Tumor_type <- cindex_results_sum_sarc_grp_tmr_meta$Tumor_type
+mdata <- melt(cindex_results_sum_sarc_grp_tmr2, id=c("HRDscore","Tumor_type"))
+mdata$variable <- NULL
+
+fig <- plot_ly(mdata, x =~Tumor_type, y = ~value, color = ~HRDscore,type = "box", notched=TRUE) %>%
+layout(boxmode= 'group',
+     yaxis = list(range=c(0,160), title = "Amplifications"),
+     xaxis = list(title = "",
+     categoryorder = "array",
+     categoryarray = c('HGSOC',
+                         'TNBC',
+                         'CRC',
+                         'UPS',
+                         'MFS',
+                         'uLMS',
+                         'MPNST',
+                         'LMS',
+                         'ddLPS',
+                         'SS',
+                         'DT'), tickangle = -45)
+)
+
+fig
+```
+
+# Deletions 
+
+```{r , include=FALSE, echo=FALSE, message=FALSE}
+#Edit results in python and annotate them and add files back here
+cindex_results_sum_sarc_grp_tmr <- read.table('/Users/aliciapliego/Projects/HRDsarcoma/data/cindex/cindex_all_del_v1.tsv', sep = '\t', header = TRUE, check.names = FALSE)
+
+rownames(cindex_results_sum_sarc_grp_tmr) <- cindex_results_sum_sarc_grp_tmr$Sample.ID
+cindex_results_sum_sarc_grp_tmr$Sample.ID <- NULL
+
+cindex_results_sum_sarc_grp_tmr_meta <- read.table('/Users/aliciapliego/Projects/HRDsarcoma/data/cindex/cindex_del_meta_v1.tsv', sep = '\t', header = TRUE)
+
+cindex_results_sum_sarc_grp_scaled = scale(cindex_results_sum_sarc_grp_tmr)
+```
+
+```{r , include=FALSE, echo=FALSE, message=FALSE}
+library(dplyr)
+colors <- c("#A6CEE3", "#1F78B4", "#B2DF8A", "#33A02C", "#FB9A99", "#E31A1C", "#FDBF6F", "#FF7F00" ,"#CAB2D6", "#6A3D9A" ,"#FFFF99", "#B15928")
+
+Tumor_type = c('HGSOC',
+                         'TNBC',
+                         'CRC',
+                         'UPS',
+                         'MFS',
+                         'OS',
+                         'uLMS',
+                         'MPNST',
+                         'LMS',
+                         'ddLPS',
+                         'SS',
+                         'DT')
+names(colors) <- Tumor_type
+
+colors_df <- as.data.frame(colors)
+colors_df$Tumor_type <- rownames(colors_df)
+colors_tumor <- inner_join(colors_df,cindex_results_sum_sarc_grp_tmr_meta, by = "Tumor_type")
+
+hrdcolors <- c("#EEA236FF","#46B8DAFF")
+names(hrdcolors) <- c("High","Low")
+hrdcolors_df <- as.data.frame(hrdcolors)
+hrdcolors_df$HRDscore <- rownames(hrdcolors_df)
+
+colors_tumor_hrd <- inner_join(colors_tumor,hrdcolors_df, by = "HRDscore")
+#rownames(colors_tumor_hrd) <- colors_tumor_hrd$Tumor_type
+
+list_tumor_colors <- c(colors_tumor_hrd$colors)
+names(list_tumor_colors) <- colors_tumor_hrd$Tumor_type
+
+list_hrd_colors <- c(colors_tumor_hrd$hrdcolors)
+names(list_hrd_colors) <- colors_tumor_hrd$HRDscore
+```
+
+### Heatmap with boxplot
+
+```{r , echo=FALSE, warning=FALSE, message=FALSE, fig.width= 7, fig.height = 7, fig.align='center'}
+
+library(ComplexHeatmap)
+
+
+ha <- HeatmapAnnotation(df = cindex_results_sum_sarc_grp_tmr_meta,
+  col = list(Tumor_type = list_tumor_colors, 
+             HRDscore = list_hrd_colors))
+
+ha_boxplot = HeatmapAnnotation(boxplot = anno_boxplot(t(cindex_results_sum_sarc_grp_scaled), axis = TRUE))
+
+Heatmap(t(cindex_results_sum_sarc_grp_scaled), 
+        name = "CINscore", #title of legend
+        column_title = "TCGA Deletions", row_title = "Chromosome",
+        cluster_columns = TRUE,
+        cluster_rows =   FALSE,
+        top_annotation = ha,bottom_annotation = ha_boxplot,
+        row_names_gp = gpar(fontsize = 7) # Text size for row names
+        ) 
+
+#draw(ht, padding = unit(c(4, 2, 2, 2), "mm"))
+```
+
+### Heatmap without boxplot
+
+```{r , echo=FALSE, warning=FALSE, message=FALSE, fig.width= 7, fig.height = 7, fig.align='center'}
+
+library(ComplexHeatmap)
+
+
+ha <- rowAnnotation(df = cindex_results_sum_sarc_grp_tmr_meta,
+  col = list(Tumor_type = list_tumor_colors, 
+             HRDscore = list_hrd_colors))
+
+#ha_boxplot = HeatmapAnnotation(boxplot = anno_boxplot(t(cindex_results_sum_sarc_grp_tmr), axis = TRUE))
+
+Heatmap(cindex_results_sum_sarc_grp_scaled, 
+        name = "CINscore", #title of legend
+        column_title = "TCGA Deletions", row_title = "",
+        cluster_columns = FALSE,
+        cluster_rows =   FALSE,
+        right_annotation = ha,
+        row_names_gp = gpar(fontsize = 7) # Text size for row names
+        ) 
+
+#draw(ht, padding = unit(c(4, 2, 2, 2), "mm"))
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width= 7, fig.height = 7, fig.align='center'}
+library(reshape)
+cindex_results_sum_sarc_grp_tmr2 <- as.data.frame(cindex_results_sum_sarc_grp_tmr)
+cindex_results_sum_sarc_grp_tmr2$HRDscore <- cindex_results_sum_sarc_grp_tmr_meta$HRDscore
+cindex_results_sum_sarc_grp_tmr2$Tumor_type <- cindex_results_sum_sarc_grp_tmr_meta$Tumor_type
+mdata <- melt(cindex_results_sum_sarc_grp_tmr2, id=c("HRDscore","Tumor_type"))
+mdata$variable <- NULL
+
+fig <- plot_ly(mdata, x =~Tumor_type, y = ~value, color = ~HRDscore,type = "box", notched=TRUE) %>%
+layout(boxmode= 'group',
+     yaxis = list(range=c(0,20), title = "Deletions"),
+     xaxis = list(title = "",
+     categoryorder = "array",
+     categoryarray = c('HGSOC',
+                         'TNBC',
+                         'CRC',
+                         'UPS',
+                         'MFS',
+                         'uLMS',
+                         'MPNST',
+                         'LMS',
+                         'ddLPS',
+                         'SS',
+                         'DT'), tickangle = -45)
+)
+
+fig
+```
+
+
+# CINdex AP Own score
+## CIN score
+```{r , include=FALSE, echo=FALSE, message=FALSE}
+#Edit results in python and annotate them and add files back here
+cindex_results_sum_sarc_grp_tmr <- read.table('/Users/aliciapliego/Projects/HRDsarcoma/data/cindex/cindex_AP_score.tsv', sep = '\t', header = TRUE, check.names = FALSE)
+
+rownames(cindex_results_sum_sarc_grp_tmr) <- cindex_results_sum_sarc_grp_tmr$Sample.ID
+cindex_results_sum_sarc_grp_tmr$Sample.ID <- NULL
+
+cindex_results_sum_sarc_grp_tmr_meta <- read.table('/Users/aliciapliego/Projects/HRDsarcoma/data/cindex/cindex_AP_score_meta.tsv', sep = '\t', header = TRUE, check.names = FALSE)
+
+cindex_results_sum_sarc_grp_scaled = scale(cindex_results_sum_sarc_grp_tmr)
+```
+
+```{r , include=FALSE, echo=FALSE, message=FALSE}
+library(dplyr)
+colors <- c("#A6CEE3", "#1F78B4", "#B2DF8A", "#33A02C", "#FB9A99", "#E31A1C", "#FDBF6F", "#FF7F00" ,"#CAB2D6", "#6A3D9A" ,"#FFFF99", "#B15928")
+
+Tumor_type = c('HGSOC',
+                         'TNBC',
+                         'CRC',
+                         'UPS',
+                         'MFS',
+                         'OS',
+                         'uLMS',
+                         'MPNST',
+                         'LMS',
+                         'ddLPS',
+                         'SS',
+                         'DT')
+names(colors) <- Tumor_type
+
+colors_df <- as.data.frame(colors)
+colors_df$Tumor_type <- rownames(colors_df)
+colors_tumor <- inner_join(colors_df,cindex_results_sum_sarc_grp_tmr_meta, by = "Tumor_type")
+
+hrdcolors <- c("#EEA236FF","#46B8DAFF")
+names(hrdcolors) <- c("High","Low")
+hrdcolors_df <- as.data.frame(hrdcolors)
+hrdcolors_df$HRDscore <- rownames(hrdcolors_df)
+
+colors_tumor_hrd <- inner_join(colors_tumor,hrdcolors_df, by = "HRDscore")
+#rownames(colors_tumor_hrd) <- colors_tumor_hrd$Tumor_type
+
+list_tumor_colors <- c(colors_tumor_hrd$colors)
+names(list_tumor_colors) <- colors_tumor_hrd$Tumor_type
+
+list_hrd_colors <- c(colors_tumor_hrd$hrdcolors)
+names(list_hrd_colors) <- colors_tumor_hrd$HRDscore
+```
+
+### Heatmap with boxplot
+
+```{r , echo=FALSE, warning=FALSE, message=FALSE, fig.width= 7, fig.height = 7, fig.align='center'}
+
+library(ComplexHeatmap)
+
+
+ha <- HeatmapAnnotation(df = cindex_results_sum_sarc_grp_tmr_meta,
+  col = list(Tumor_type = list_tumor_colors, 
+             HRDscore = list_hrd_colors))
+
+ha_boxplot = HeatmapAnnotation(boxplot = anno_boxplot(t(cindex_results_sum_sarc_grp_scaled), axis = TRUE))
+
+Heatmap(t(cindex_results_sum_sarc_grp_scaled), 
+        name = "CINscore", #title of legend
+        column_title = "TCGA CIN", row_title = "Chromosome",
+        cluster_columns = TRUE,
+        cluster_rows =   FALSE,
+        top_annotation = ha,bottom_annotation = ha_boxplot,
+        row_names_gp = gpar(fontsize = 7) # Text size for row names
+        ) 
+
+#draw(ht, padding = unit(c(4, 2, 2, 2), "mm"))
+```
+
+### Heatmap without boxplot
+
+```{r , echo=FALSE, warning=FALSE, message=FALSE, fig.width= 7, fig.height = 7, fig.align='center'}
+
+library(ComplexHeatmap)
+
+
+ha <- rowAnnotation(df = cindex_results_sum_sarc_grp_tmr_meta,
+  col = list(Tumor_type = list_tumor_colors, 
+             HRDscore = list_hrd_colors))
+
+#ha_boxplot = HeatmapAnnotation(boxplot = anno_boxplot(t(cindex_results_sum_sarc_grp_tmr), axis = TRUE))
+
+Heatmap(cindex_results_sum_sarc_grp_scaled, 
+        name = "CINscore", #title of legend
+        column_title = "TCGA CIN", row_title = "",
+        cluster_columns = FALSE,
+        cluster_rows =   FALSE,
+        right_annotation = ha,
+        row_names_gp = gpar(fontsize = 7) # Text size for row names
+        ) 
+
+#draw(ht, padding = unit(c(4, 2, 2, 2), "mm"))
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width= 7, fig.height = 7, fig.align='center'}
+library(reshape)
+cindex_results_sum_sarc_grp_tmr2 <- as.data.frame(cindex_results_sum_sarc_grp_tmr)
+cindex_results_sum_sarc_grp_tmr2$HRDscore <- cindex_results_sum_sarc_grp_tmr_meta$HRDscore
+cindex_results_sum_sarc_grp_tmr2$Tumor_type <- cindex_results_sum_sarc_grp_tmr_meta$Tumor_type
+mdata <- melt(cindex_results_sum_sarc_grp_tmr2, id=c("HRDscore","Tumor_type"))
+mdata$variable <- NULL
+
+fig <- plot_ly(mdata, x =~Tumor_type, y = ~value, color = ~HRDscore,type = "box", notched=TRUE) %>%
+layout(boxmode= 'group',
+     yaxis = list(range=c(0,35), title = "CIN"),
+     xaxis = list(title = "",
+     categoryorder = "array",
+     categoryarray = c('HGSOC',
+                         'TNBC',
+                         'CRC',
+                         'UPS',
+                         'MFS',
+                         'OS',
+                         'uLMS',
+                         'MPNST',
+                         'LMS',
+                         'ddLPS',
+                         'SS',
+                         'DT'), tickangle = -45)
+)
+
+fig
+```
+
+## Amplifications 
+```{r , include=FALSE, echo=FALSE, message=FALSE}
+#Edit results in python and annotate them and add files back here
+cindex_results_sum_sarc_grp_tmr <- read.table('/Users/aliciapliego/Projects/HRDsarcoma/data/cindex/amplifications_AP.tsv', sep = '\t', header = TRUE, check.names = FALSE)
+
+rownames(cindex_results_sum_sarc_grp_tmr) <- cindex_results_sum_sarc_grp_tmr$Sample.ID
+cindex_results_sum_sarc_grp_tmr$Sample.ID <- NULL
+
+cindex_results_sum_sarc_grp_tmr_meta <- read.table('/Users/aliciapliego/Projects/HRDsarcoma/data/cindex/amplifications_AP_meta.tsv', sep = '\t', header = TRUE, check.names = FALSE)
+
+cindex_results_sum_sarc_grp_scaled = scale(cindex_results_sum_sarc_grp_tmr)
+```
+
+```{r , include=FALSE, echo=FALSE, message=FALSE}
+library(dplyr)
+colors <- c("#A6CEE3", "#1F78B4", "#B2DF8A", "#33A02C", "#FB9A99", "#E31A1C", "#FDBF6F", "#FF7F00" ,"#CAB2D6", "#6A3D9A" ,"#FFFF99", "#B15928")
+
+Tumor_type = c('HGSOC',
+                         'TNBC',
+                         'CRC',
+                         'UPS',
+                         'MFS',
+                         'OS',
+                         'uLMS',
+                         'MPNST',
+                         'LMS',
+                         'ddLPS',
+                         'SS',
+                         'DT')
+names(colors) <- Tumor_type
+
+colors_df <- as.data.frame(colors)
+colors_df$Tumor_type <- rownames(colors_df)
+colors_tumor <- inner_join(colors_df,cindex_results_sum_sarc_grp_tmr_meta, by = "Tumor_type")
+
+hrdcolors <- c("#EEA236FF","#46B8DAFF")
+names(hrdcolors) <- c("High","Low")
+hrdcolors_df <- as.data.frame(hrdcolors)
+hrdcolors_df$HRDscore <- rownames(hrdcolors_df)
+
+colors_tumor_hrd <- inner_join(colors_tumor,hrdcolors_df, by = "HRDscore")
+#rownames(colors_tumor_hrd) <- colors_tumor_hrd$Tumor_type
+
+list_tumor_colors <- c(colors_tumor_hrd$colors)
+names(list_tumor_colors) <- colors_tumor_hrd$Tumor_type
+
+list_hrd_colors <- c(colors_tumor_hrd$hrdcolors)
+names(list_hrd_colors) <- colors_tumor_hrd$HRDscore
+```
+
+### Heatmap with boxplot
+
+```{r , echo=FALSE, warning=FALSE, message=FALSE, fig.width= 7, fig.height = 7, fig.align='center'}
+
+library(ComplexHeatmap)
+
+
+ha <- HeatmapAnnotation(df = cindex_results_sum_sarc_grp_tmr_meta,
+  col = list(Tumor_type = list_tumor_colors, 
+             HRDscore = list_hrd_colors))
+
+ha_boxplot = HeatmapAnnotation(boxplot = anno_boxplot(t(cindex_results_sum_sarc_grp_scaled), axis = TRUE))
+
+Heatmap(t(cindex_results_sum_sarc_grp_scaled), 
+        name = "CINscore", #title of legend
+        column_title = "TCGA Amplifications", row_title = "Chromosome",
+        cluster_columns = TRUE,
+        cluster_rows =   FALSE,
+        top_annotation = ha,bottom_annotation = ha_boxplot,
+        row_names_gp = gpar(fontsize = 7) # Text size for row names
+        ) 
+
+#draw(ht, padding = unit(c(4, 2, 2, 2), "mm"))
+```
+
+### Heatmap without boxplot
+
+```{r , echo=FALSE, warning=FALSE, message=FALSE, fig.width= 7, fig.height = 7, fig.align='center'}
+
+library(ComplexHeatmap)
+
+
+ha <- rowAnnotation(df = cindex_results_sum_sarc_grp_tmr_meta,
+  col = list(Tumor_type = list_tumor_colors, 
+             HRDscore = list_hrd_colors))
+
+#ha_boxplot = HeatmapAnnotation(boxplot = anno_boxplot(t(cindex_results_sum_sarc_grp_tmr), axis = TRUE))
+
+Heatmap(cindex_results_sum_sarc_grp_scaled, 
+        name = "CINscore", #title of legend
+        column_title = "TCGA Amplifications", row_title = "",
+        cluster_columns = FALSE,
+        cluster_rows =   FALSE,
+        right_annotation = ha,
+        row_names_gp = gpar(fontsize = 7) # Text size for row names
+        ) 
+
+#draw(ht, padding = unit(c(4, 2, 2, 2), "mm"))
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width= 7, fig.height = 7, fig.align='center'}
+library(reshape)
+cindex_results_sum_sarc_grp_tmr2 <- as.data.frame(cindex_results_sum_sarc_grp_tmr)
+cindex_results_sum_sarc_grp_tmr2$HRDscore <- cindex_results_sum_sarc_grp_tmr_meta$HRDscore
+cindex_results_sum_sarc_grp_tmr2$Tumor_type <- cindex_results_sum_sarc_grp_tmr_meta$Tumor_type
+mdata <- melt(cindex_results_sum_sarc_grp_tmr2, id=c("HRDscore","Tumor_type"))
+mdata$variable <- NULL
+
+fig <- plot_ly(mdata, x =~Tumor_type, y = ~value, color = ~HRDscore,type = "box", notched=TRUE) %>%
+layout(boxmode= 'group',
+     yaxis = list(range=c(0,35), title = "Amplifications"),
+     xaxis = list(title = "",
+     categoryorder = "array",
+     categoryarray = c('HGSOC',
+                         'TNBC',
+                         'CRC',
+                         'UPS',
+                         'MFS',
+                         'OS',
+                         'uLMS',
+                         'MPNST',
+                         'LMS',
+                         'ddLPS',
+                         'SS',
+                         'DT'), tickangle = -45)
+)
+
+fig
+```
+
+## Deletions
+```{r , include=FALSE, echo=FALSE, message=FALSE}
+#Edit results in python and annotate them and add files back here
+cindex_results_sum_sarc_grp_tmr <- read.table('/Users/aliciapliego/Projects/HRDsarcoma/data/cindex/deletions_AP.tsv', sep = '\t', header = TRUE, check.names = FALSE)
+
+rownames(cindex_results_sum_sarc_grp_tmr) <- cindex_results_sum_sarc_grp_tmr$Sample.ID
+cindex_results_sum_sarc_grp_tmr$Sample.ID <- NULL
+
+cindex_results_sum_sarc_grp_tmr_meta <- read.table('/Users/aliciapliego/Projects/HRDsarcoma/data/cindex/deletions_AP_meta.tsv', sep = '\t', header = TRUE, check.names = FALSE)
+
+cindex_results_sum_sarc_grp_scaled = scale(cindex_results_sum_sarc_grp_tmr)
+```
+
+```{r , include=FALSE, echo=FALSE, message=FALSE}
+library(dplyr)
+colors <- c("#A6CEE3", "#1F78B4", "#B2DF8A", "#33A02C", "#FB9A99", "#E31A1C", "#FDBF6F", "#FF7F00" ,"#CAB2D6", "#6A3D9A" ,"#FFFF99", "#B15928")
+
+Tumor_type = c('HGSOC',
+                         'TNBC',
+                         'CRC',
+                         'UPS',
+                         'MFS',
+                         'OS',
+                         'uLMS',
+                         'MPNST',
+                         'LMS',
+                         'ddLPS',
+                         'SS',
+                         'DT')
+names(colors) <- Tumor_type
+
+colors_df <- as.data.frame(colors)
+colors_df$Tumor_type <- rownames(colors_df)
+colors_tumor <- inner_join(colors_df,cindex_results_sum_sarc_grp_tmr_meta, by = "Tumor_type")
+
+hrdcolors <- c("#EEA236FF","#46B8DAFF")
+names(hrdcolors) <- c("High","Low")
+hrdcolors_df <- as.data.frame(hrdcolors)
+hrdcolors_df$HRDscore <- rownames(hrdcolors_df)
+
+colors_tumor_hrd <- inner_join(colors_tumor,hrdcolors_df, by = "HRDscore")
+#rownames(colors_tumor_hrd) <- colors_tumor_hrd$Tumor_type
+
+list_tumor_colors <- c(colors_tumor_hrd$colors)
+names(list_tumor_colors) <- colors_tumor_hrd$Tumor_type
+
+list_hrd_colors <- c(colors_tumor_hrd$hrdcolors)
+names(list_hrd_colors) <- colors_tumor_hrd$HRDscore
+```
+
+### Heatmap with boxplot
+
+```{r , echo=FALSE, warning=FALSE, message=FALSE, fig.width= 7, fig.height = 7, fig.align='center'}
+
+library(ComplexHeatmap)
+
+
+ha <- HeatmapAnnotation(df = cindex_results_sum_sarc_grp_tmr_meta,
+  col = list(Tumor_type = list_tumor_colors, 
+             HRDscore = list_hrd_colors))
+
+ha_boxplot = HeatmapAnnotation(boxplot = anno_boxplot(t(cindex_results_sum_sarc_grp_scaled), axis = TRUE))
+
+Heatmap(t(cindex_results_sum_sarc_grp_scaled), 
+        name = "CINscore", #title of legend
+        column_title = "TCGA Deletions", row_title = "Chromosome",
+        cluster_columns = TRUE,
+        cluster_rows =   FALSE,
+        top_annotation = ha,bottom_annotation = ha_boxplot,
+        row_names_gp = gpar(fontsize = 7) # Text size for row names
+        ) 
+
+#draw(ht, padding = unit(c(4, 2, 2, 2), "mm"))
+```
+
+### Heatmap without boxplot
+
+```{r , echo=FALSE, warning=FALSE, message=FALSE, fig.width= 7, fig.height = 7, fig.align='center'}
+
+library(ComplexHeatmap)
+
+
+ha <- rowAnnotation(df = cindex_results_sum_sarc_grp_tmr_meta,
+  col = list(Tumor_type = list_tumor_colors, 
+             HRDscore = list_hrd_colors))
+
+#ha_boxplot = HeatmapAnnotation(boxplot = anno_boxplot(t(cindex_results_sum_sarc_grp_tmr), axis = TRUE))
+
+Heatmap(cindex_results_sum_sarc_grp_scaled, 
+        name = "CINscore", #title of legend
+        column_title = "TCGA Deletions", row_title = "",
+        cluster_columns = FALSE,
+        cluster_rows =   FALSE,
+        right_annotation = ha,
+        row_names_gp = gpar(fontsize = 7) # Text size for row names
+        ) 
+
+#draw(ht, padding = unit(c(4, 2, 2, 2), "mm"))
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width= 7, fig.height = 7, fig.align='center'}
+library(reshape)
+cindex_results_sum_sarc_grp_tmr2 <- as.data.frame(cindex_results_sum_sarc_grp_tmr)
+cindex_results_sum_sarc_grp_tmr2$HRDscore <- cindex_results_sum_sarc_grp_tmr_meta$HRDscore
+cindex_results_sum_sarc_grp_tmr2$Tumor_type <- cindex_results_sum_sarc_grp_tmr_meta$Tumor_type
+mdata <- melt(cindex_results_sum_sarc_grp_tmr2, id=c("HRDscore","Tumor_type"))
+mdata$variable <- NULL
+
+fig <- plot_ly(mdata, x =~Tumor_type, y = ~value, color = ~HRDscore,type = "box", notched=TRUE) %>%
+layout(boxmode= 'group',
+     yaxis = list(range=c(0,35), title = "Deletions"),
+     xaxis = list(title = "",
+     categoryorder = "array",
+     categoryarray = c('HGSOC',
+                         'TNBC',
+                         'CRC',
+                         'UPS',
+                         'MFS',
+                         'OS',
+                         'uLMS',
+                         'MPNST',
+                         'LMS',
+                         'ddLPS',
+                         'SS',
+                         'DT'), tickangle = -45)
+)
+
+fig
+```
