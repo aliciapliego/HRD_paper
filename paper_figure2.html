@@ -12,7 +12,7 @@
 <meta name="author" content="Alicia Pliego" />
 
 
-<title>cutoff_hrdness</title>
+<title>Cutoff HRD</title>
 
 <script src="site_libs/header-attrs-2.14/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -30,6 +30,9 @@
        h6 {font-size: 12px;}
        code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
        pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
@@ -224,6 +227,69 @@ $(document).ready(function () {
 
 
 
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
 
 </head>
 
@@ -231,6 +297,16 @@ $(document).ready(function () {
 
 
 <div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
 
 
 
@@ -274,79 +350,29 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">cutoff_hrdness</h1>
+<h1 class="title toc-ignore">Cutoff HRD</h1>
 <h4 class="author">Alicia Pliego</h4>
-<h4 class="date">6/7/2022</h4>
 
 </div>
 
 
-<div id="infering-hrd-cutoff" class="section level1">
-<h1>Infering HRD cutoff</h1>
-<p>Correlation between HRDness and CIN scores:</p>
-<p><img src="cutoff_hrdness_files/figure-html/unnamed-chunk-3-1.png" width="384" style="display: block; margin: auto;" /></p>
-<p><img src="cutoff_hrdness_files/figure-html/unnamed-chunk-4-1.png" width="384" style="display: block; margin: auto;" /></p>
-<p><img src="cutoff_hrdness_files/figure-html/unnamed-chunk-5-1.png" width="384" style="display: block; margin: auto;" /></p>
-<p><img src="cutoff_hrdness_files/figure-html/unnamed-chunk-6-1.png" width="384" style="display: block; margin: auto;" /></p>
-<p><img src="cutoff_hrdness_files/figure-html/unnamed-chunk-8-1.png" width="384" style="display: block; margin: auto;" /></p>
-<pre><code>## 
-##  Spearman&#39;s rank correlation rho
-## 
-## data:  cutpoint_data2$HRDscore and cutpoint_data2$cindex
-## S = 1237671, p-value = 5.892e-09
-## alternative hypothesis: true rho is not equal to 0
-## sample estimates:
-##       rho 
-## 0.3734434</code></pre>
-<p>Since none of the variables show normal distribution, we apply Spearman correlation coefficient, which shows a positive correlation between CIN and HRD score.</p>
-<p>There are still cases with very high CIN and very low HRD score.</p>
-<p>Is it CIN in HRDgenes? a better signature?</p>
-<div id="asign-a-cutoff-for-cin-score" class="section level2">
-<h2>Asign a cutoff for CIN score</h2>
-<p>HRD cin: signature of alteration in genes from the HR pathway. Using the copy number profiles, we have calculated the CIN for all the genes belonging to this HR gene list across all the samples. The sample distribution of the CIN HR signature follows a bimodal distribution model, where we can infer a cutoff value using the following formula from this protocol <a href="http://marcchoisy.free.fr/fmm/index.html" class="uri">http://marcchoisy.free.fr/fmm/index.html</a> . This method is used in (Trang et al. 2015). The confidence interval of the cutoff is computed by Monte Carlo simulations and gives 37.</p>
-<p>The data has been labeled as positive for HR cin and negative for HR cin.</p>
-<p>Based on this values we have plotted the ROC curve and infered the Youden index in order to set a threshold for HRDness, which resulted in an optimal value of 32. <img src="cutoff_hrdness_files/figure-html/unnamed-chunk-10-1.png" width="672" style="display: block; margin: auto;" /></p>
-<pre><code>## 
-##  Spearman&#39;s rank correlation rho
-## 
-## data:  hrdcin$HRDscore and hrdcin$HRDcin
-## S = 842393, p-value &lt; 2.2e-16
-## alternative hypothesis: true rho is not equal to 0
-## sample estimates:
-##       rho 
-## 0.5735483</code></pre>
-<p><img src="cutoff_hrdness_files/figure-html/unnamed-chunk-11-1.png" width="384" style="display: block; margin: auto;" /></p>
-<pre><code>## 
-##         Finite mixture model fitting to dataset &quot;hrdcin$HRDcin&quot;:
-## 
-## probability to belong to distribution 1 = 0.3978905 
-## distribution 1: normal 
-##   location (mean) = 10.7739569
-##   scale (sd) = 7.9666857
-## distribution 2: normal 
-##   location (mean) = 48.6351643
-##   scale (sd) = 8.6538207
-## deviance of the fitted model: 809.1653343</code></pre>
-<pre><code>##          Estimate      2.5 %     97.5 %
-## mu1    10.7739569  9.0719023 12.5114564
-## sigma1  7.9666857  6.8556979  9.3584799
-## mu2    48.6351643 47.1160592 50.1289891
-## sigma2  8.6538207  7.6653816  9.8516419
-## lambda  0.3979161  0.3343915  0.4614408</code></pre>
-<p><img src="cutoff_hrdness_files/figure-html/unnamed-chunk-14-1.png" width="672" style="display: block; margin: auto;" /></p>
-<pre><code>## Estimate    2.5 %   97.5 % 
-## 33.39802 32.42239 34.37366</code></pre>
-<p><img src="cutoff_hrdness_files/figure-html/unnamed-chunk-15-1.png" width="672" style="display: block; margin: auto;" /> Optimal cutoff for HRDcin is 33:</p>
-<p>Apply cutoff to HRD data:</p>
-<p>Optimal cutoff = 32 HRD</p>
-<p><img src="cutoff_hrdness_files/figure-html/unnamed-chunk-19-1.png" width="672" style="display: block; margin: auto;" /></p>
-</div>
-</div>
+<style>
+body {
+text-align: justify}
+</style>
+<p>Variant detection was performed in accordance to the GATK Best practices using GATK 4.1.0.0. Germline variants were called from control samples using Mutect2 in artefact detection mode and pooled into a cohort-wide panel of normals. Somatic variants were subsequently called in individual tumour samples (single-sample mode) and in entire patients using GATK 4.1 Mutect2 in multi-sample mode. Mutect2 was given matched control samples, the aforementioned panel of normals and the gnomAD germline resource as additional controls. Cross-sample contamination was evaluated using ‘GetPileupSummaries’ and ‘CalculateContamination’ run for both tumour and matching control samples. Read orientation artefacts were evaluated using ‘CollectF1R2Counts’ and ‘LearnReadOrientationModel’. Somatic likelihood, read orientation, sequence context, germline and contamination filters were applied using ‘FilterMutectCalls’.</p>
+<p>BCFTools 1.9 was used to normalize, sort and index variants56. A consensus VCF was generated from all variants in the cohort, removing any duplicate variants. The consensus VCF file was annotated using GATK 4.1 Funcotator and the v1.6.20190124s annotation data source. Allele frequencies from multi-sample Mutect2 were used to compare allele frequencies between related samples. Multi-sample Mutect2 calls and filters mutations across a patient as a whole and does not determine mutation calls in a single sample. Single-sample mutation calls were overlaid on the multi-sample calls to infer whether variants were called in individual samples. Single-sample called variants that were not present in the multi-sample callset were discarded.</p>
+<p>A copy number caller loosely based on GATK ‘CallCopyRatioSegments’ (which in turn is based off of ReCapSeg) and GISTIC was implemented to call both arm-level and high-level copy number changes, respectively57,58.</p>
+<p>Segments (from ‘ModelSegments’) with a non-log2 copy ratio between 0.9 and 1.1 were determined to be neutral. These segments were then weighted by length and a weighted mean and standard deviation non-log2 copy ratio (once-filtered) were determined again. Outlier segments are removed and once again a weighted mean and standard deviation non-log2 copy ratio (twice-filtered) were determined. Segments with a non-log2 copy ratio between 0.9 and 1.1 and segments within two standard deviations of the twice-filtered mean were determined to be neutral, and segments outside of these boundaries were determined to have a low-level amplification or deletion, depending on the direction.</p>
+<p>The weighted mean and standard deviation of the non-log2 copy ratio (once-filtered) was then determined individually for each chromosome arm. Outlier segments were removed and the weighted mean and standard deviation of the non-log2 copy ratio (twice-filtered) was determined again. To determine a high-level amplification and deletion threshold, the most highly amplified and deleted chromosome arms were selected, respectively. The twice-filtered mean plus (high level amplification) or minus (high level deletion) two times the standard deviation of the selected arms were used as high-level thresholds.</p>
+<p>Gene level copy numbers were called by intersecting the gene boundaries with the segment intervals and by calculating the weighted non-log2 copy ratio for that gene. The copy number call for that gene was then determined by comparing the gene-level non-log2 copy ratio to the previously determined thresholds.</p>
 
 
 <p>Copyright &copy; 2022 Alicia Pliego. FTP lab. All rights reserved.</p>
 
 
+</div>
+</div>
 
 </div>
 
@@ -379,6 +405,35 @@ $(document).ready(function () {
 
 <!-- code folding -->
 
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
 <script>
