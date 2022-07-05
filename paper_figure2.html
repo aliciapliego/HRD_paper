@@ -12,7 +12,7 @@
 <meta name="author" content="Alicia Pliego" />
 
 
-<title>Cutoff HRD</title>
+<title>Fig 2</title>
 
 <script src="site_libs/header-attrs-2.14/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -330,6 +330,9 @@ div.tocify {
   <a href="paper_figure1.html">Figure 1</a>
 </li>
 <li>
+  <a href="paper_figure1_supp.html">Figure 1 Supp</a>
+</li>
+<li>
   <a href="paper_figure1.html">Figure 2</a>
 </li>
 <li>
@@ -350,7 +353,7 @@ div.tocify {
 
 
 
-<h1 class="title toc-ignore">Cutoff HRD</h1>
+<h1 class="title toc-ignore">Fig 2</h1>
 <h4 class="author">Alicia Pliego</h4>
 
 </div>
@@ -360,12 +363,44 @@ div.tocify {
 body {
 text-align: justify}
 </style>
-<p>Variant detection was performed in accordance to the GATK Best practices using GATK 4.1.0.0. Germline variants were called from control samples using Mutect2 in artefact detection mode and pooled into a cohort-wide panel of normals. Somatic variants were subsequently called in individual tumour samples (single-sample mode) and in entire patients using GATK 4.1 Mutect2 in multi-sample mode. Mutect2 was given matched control samples, the aforementioned panel of normals and the gnomAD germline resource as additional controls. Cross-sample contamination was evaluated using ‘GetPileupSummaries’ and ‘CalculateContamination’ run for both tumour and matching control samples. Read orientation artefacts were evaluated using ‘CollectF1R2Counts’ and ‘LearnReadOrientationModel’. Somatic likelihood, read orientation, sequence context, germline and contamination filters were applied using ‘FilterMutectCalls’.</p>
-<p>BCFTools 1.9 was used to normalize, sort and index variants56. A consensus VCF was generated from all variants in the cohort, removing any duplicate variants. The consensus VCF file was annotated using GATK 4.1 Funcotator and the v1.6.20190124s annotation data source. Allele frequencies from multi-sample Mutect2 were used to compare allele frequencies between related samples. Multi-sample Mutect2 calls and filters mutations across a patient as a whole and does not determine mutation calls in a single sample. Single-sample mutation calls were overlaid on the multi-sample calls to infer whether variants were called in individual samples. Single-sample called variants that were not present in the multi-sample callset were discarded.</p>
-<p>A copy number caller loosely based on GATK ‘CallCopyRatioSegments’ (which in turn is based off of ReCapSeg) and GISTIC was implemented to call both arm-level and high-level copy number changes, respectively57,58.</p>
-<p>Segments (from ‘ModelSegments’) with a non-log2 copy ratio between 0.9 and 1.1 were determined to be neutral. These segments were then weighted by length and a weighted mean and standard deviation non-log2 copy ratio (once-filtered) were determined again. Outlier segments are removed and once again a weighted mean and standard deviation non-log2 copy ratio (twice-filtered) were determined. Segments with a non-log2 copy ratio between 0.9 and 1.1 and segments within two standard deviations of the twice-filtered mean were determined to be neutral, and segments outside of these boundaries were determined to have a low-level amplification or deletion, depending on the direction.</p>
-<p>The weighted mean and standard deviation of the non-log2 copy ratio (once-filtered) was then determined individually for each chromosome arm. Outlier segments were removed and the weighted mean and standard deviation of the non-log2 copy ratio (twice-filtered) was determined again. To determine a high-level amplification and deletion threshold, the most highly amplified and deleted chromosome arms were selected, respectively. The twice-filtered mean plus (high level amplification) or minus (high level deletion) two times the standard deviation of the selected arms were used as high-level thresholds.</p>
-<p>Gene level copy numbers were called by intersecting the gene boundaries with the segment intervals and by calculating the weighted non-log2 copy ratio for that gene. The copy number call for that gene was then determined by comparing the gene-level non-log2 copy ratio to the previously determined thresholds.</p>
+<div id="cindex-ap-own-score" class="section level1" number="1">
+<h1 number="1"><span class="header-section-number">1</span> CINdex AP Own score</h1>
+<div id="cin-score" class="section level2" number="1.1">
+<h2 number="1.1"><span class="header-section-number">1.1</span> CIN score</h2>
+<div id="heatmap-cin-total" class="section level3" number="1.1.1">
+<h3 number="1.1.1"><span class="header-section-number">1.1.1</span> Heatmap CIN total</h3>
+<p><img src="paper_figure2_files/figure-html/include==FALSE-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="paper_figure2_files/figure-html/unnamed-chunk-5-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="amplifications" class="section level2" number="1.2">
+<h2 number="1.2"><span class="header-section-number">1.2</span> Amplifications</h2>
+<div id="heatmap-amplifications" class="section level3" number="1.2.1">
+<h3 number="1.2.1"><span class="header-section-number">1.2.1</span> Heatmap Amplifications</h3>
+<p><img src="paper_figure2_files/figure-html/unnamed-chunk-9-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="amplifications-boxplots" class="section level3" number="1.2.2">
+<h3 number="1.2.2"><span class="header-section-number">1.2.2</span> Amplifications boxplots</h3>
+<p><img src="paper_figure2_files/figure-html/unnamed-chunk-11-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="deletions" class="section level2" number="1.3">
+<h2 number="1.3"><span class="header-section-number">1.3</span> Deletions</h2>
+<div id="heatmap-with-boxplot" class="section level3" number="1.3.1">
+<h3 number="1.3.1"><span class="header-section-number">1.3.1</span> Heatmap with boxplot</h3>
+<p><img src="paper_figure2_files/figure-html/unnamed-chunk-15-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="paper_figure2_files/figure-html/unnamed-chunk-17-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+</div>
+<div id="aneuploidies" class="section level1" number="2">
+<h1 number="2"><span class="header-section-number">2</span> Aneuploidies</h1>
+<div id="heatmap-aneuploidies" class="section level3" number="2.0.1">
+<h3 number="2.0.1"><span class="header-section-number">2.0.1</span> Heatmap aneuploidies</h3>
+<p><img src="paper_figure2_files/figure-html/unnamed-chunk-21-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="paper_figure2_files/figure-html/unnamed-chunk-23-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+</div>
 
 
 <p>Copyright &copy; 2022 Alicia Pliego. FTP lab. All rights reserved.</p>

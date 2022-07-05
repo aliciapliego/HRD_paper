@@ -7,6 +7,8 @@ navbar:
       href: cutoff_hrdness.html
     - text: "Figure 1"
       href: paper_figure1.html
+    - text: "Figure 1 Supp"
+      href: paper_figure1_supp.html
     - text: "Figure 2"
       href: paper_figure1.html
     - text: "Figure 3"

@@ -1,0 +1,478 @@
+---
+title: "Figure 1 Paper HRDness"
+author: "Alicia Pliego"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    toc_collapsed: true
+    toc_depth: 3
+    number_sections: true
+    theme: sandstone
+---
+<style>
+body {
+text-align: justify}
+</style>
+```{r setup, include=FALSE, echo=FALSE, message=FALSE}
+library(CINmetrics)
+library(TCGAbiolinks)
+library(heatmaply)
+library(GenomicRanges)
+library(AnnotationHub)
+library(pd.genomewidesnp.6)
+library(rtracklayer)
+library(biovizBase) #needed for stain information
+library(CINdex)
+library(IRanges)
+library(TxDb.Hsapiens.UCSC.hg18.knownGene)
+library(Homo.sapiens)
+```
+##### SINOVIAL SARCOMA (SS) Heatmap of the different scores 
+
+```{r , include=FALSE, echo=FALSE, message=FALSE}
+#Load data from CINmetrics annotated in python
+cinmetrics_sarc_anno <- read.csv('/Users/aliciapliego/Projects/HRDsarcoma/data/CINmetrics_annotated_sarc_SS.tsv', sep = '\t')
+cinmetrics_sarc_anno
+cinmetrics_sarc_anno<- cinmetrics_sarc_anno[!duplicated(cinmetrics_sarc_anno), ]
+```
+
+```{r , include=FALSE, echo=FALSE, message=FALSE}
+cinmetrics_sarc_anno_2 <- cinmetrics_sarc_anno 
+rownames(cinmetrics_sarc_anno_2) -> cinmetrics_sarc_anno_2$Case.ID
+cinmetrics_sarc_anno_2$Case.ID <- NULL
+cinmetrics_sarc_anno_2$Sample.Type <- NULL
+cinmetrics_sarc_anno_2$HRD32 <- NULL
+cinmetrics_sarc_log10 <- log10(cinmetrics_sarc_anno_2)
+```
+
+
+````{r , include=FALSE, echo=FALSE, message=FALSE}
+row.names(cinmetrics_sarc_log10) <- cinmetrics_sarc_anno$Case.ID
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width= 7, fig.height = 7, fig.align='center'}
+heatmaply(cinmetrics_sarc_log10, 
+          
+  scale_fill_gradient_fun = ggplot2::scale_fill_gradient2(
+    low = "blue", 
+    high = "red", 
+    midpoint = 200, 
+    limits = c(0, 500)
+  ),
+  showticklabels = c(TRUE, FALSE),
+  scale = "column",
+  main = "Sinovial Sarcoma (SS) TCGA-SARC CINmetrics",
+  row_side_colors = cinmetrics_sarc_anno[, c( "Sample.Type", "HRD32")]
+  )
+```
+
+##### UPS Heatmap of the different scores 
+
+```{r , include=FALSE, echo=FALSE, message=FALSE}
+#Load data from CINmetrics annotated in python
+cinmetrics_sarc_anno <- read.csv('/Users/aliciapliego/Projects/HRDsarcoma/data/CINmetrics_annotated_sarc_UPS.tsv', sep = '\t')
+cinmetrics_sarc_anno
+cinmetrics_sarc_anno<- cinmetrics_sarc_anno[!duplicated(cinmetrics_sarc_anno), ]
+```
+
+```{r , include=FALSE, echo=FALSE, message=FALSE}
+cinmetrics_sarc_anno_2 <- cinmetrics_sarc_anno 
+rownames(cinmetrics_sarc_anno_2) -> cinmetrics_sarc_anno_2$sample_id
+cinmetrics_sarc_anno_2$sample_id <- NULL
+cinmetrics_sarc_anno_2$Tumor_type <- NULL
+cinmetrics_sarc_anno_2$Sample.Type <- NULL
+cinmetrics_sarc_anno_2$HRD34 <- NULL
+cinmetrics_sarc_log10 <- log10(cinmetrics_sarc_anno_2)
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width= 7, fig.height = 7, fig.align='center'}
+heatmaply_cor(
+  cor(cinmetrics_sarc_log10),
+  #xlab = "Features", 
+  #ylab = "Features"
+)
+```
+
+```{r , include=FALSE, echo=FALSE, message=FALSE}
+row.names(cinmetrics_sarc_log10) <- cinmetrics_sarc_anno$sample_id
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width= 7, fig.height = 7, fig.align='center'}
+heatmaply(cinmetrics_sarc_log10, 
+          
+  scale_fill_gradient_fun = ggplot2::scale_fill_gradient2(
+    low = "blue", 
+    high = "red", 
+    midpoint = 200, 
+    limits = c(0, 500)
+  ),
+  showticklabels = c(TRUE, FALSE),
+  scale = "column",
+  main = "UPS TCGA-SARC CINmetrics",
+  row_side_colors = cinmetrics_sarc_anno[, c( "Sample.Type", "HRD34")]
+  )
+```
+
+##### MFS Heatmap of the different scores 
+
+```{r , include=FALSE, echo=FALSE, message=FALSE}
+#Load data from CINmetrics annotated in python
+cinmetrics_sarc_anno <- read.csv('/Users/aliciapliego/Projects/HRDsarcoma/data/CINmetrics_annotated_sarc_MFS.tsv', sep = '\t')
+cinmetrics_sarc_anno
+cinmetrics_sarc_anno<- cinmetrics_sarc_anno[!duplicated(cinmetrics_sarc_anno), ]
+```
+
+```{r , include=FALSE, echo=FALSE, message=FALSE}
+cinmetrics_sarc_anno_2 <- cinmetrics_sarc_anno 
+rownames(cinmetrics_sarc_anno_2) -> cinmetrics_sarc_anno_2$sample_id
+cinmetrics_sarc_anno_2$sample_id <- NULL
+cinmetrics_sarc_anno_2$Tumor_type <- NULL
+cinmetrics_sarc_anno_2$Sample.Type <- NULL
+cinmetrics_sarc_anno_2$HRD34 <- NULL
+cinmetrics_sarc_log10 <- log10(cinmetrics_sarc_anno_2)
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width= 7, fig.height = 7, fig.align='center'}
+heatmaply_cor(
+  cor(cinmetrics_sarc_log10),
+  #xlab = "Features", 
+  #ylab = "Features"
+)
+```
+
+````{r , include=FALSE, echo=FALSE, message=FALSE}
+row.names(cinmetrics_sarc_log10) <- cinmetrics_sarc_anno$sample_id
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width= 7, fig.height = 7, fig.align='center'}
+heatmaply(cinmetrics_sarc_log10, 
+          
+  scale_fill_gradient_fun = ggplot2::scale_fill_gradient2(
+    low = "blue", 
+    high = "red", 
+    midpoint = 200, 
+    limits = c(0, 500)
+  ),
+  showticklabels = c(TRUE, FALSE),
+  scale = "column",
+  main = "MFS TCGA-SARC CINmetrics",
+  row_side_colors = cinmetrics_sarc_anno[, c( "Sample.Type", "HRD34")]
+  )
+```
+
+##### ddLPS Heatmap of the different scores 
+
+```{r , include=FALSE, echo=FALSE, message=FALSE}
+#Load data from CINmetrics annotated in python
+cinmetrics_sarc_anno <- read.csv('/Users/aliciapliego/Projects/HRDsarcoma/data/CINmetrics_annotated_sarc_ddLPS.tsv', sep = '\t')
+cinmetrics_sarc_anno
+cinmetrics_sarc_anno<- cinmetrics_sarc_anno[!duplicated(cinmetrics_sarc_anno), ]
+```
+
+```{r , include=FALSE, echo=FALSE, message=FALSE}
+cinmetrics_sarc_anno_2 <- cinmetrics_sarc_anno 
+rownames(cinmetrics_sarc_anno_2) -> cinmetrics_sarc_anno_2$sample_id
+cinmetrics_sarc_anno_2$sample_id <- NULL
+cinmetrics_sarc_anno_2$Tumor_type <- NULL
+cinmetrics_sarc_anno_2$Sample.Type <- NULL
+cinmetrics_sarc_anno_2$HRD34 <- NULL
+cinmetrics_sarc_log10 <- log10(cinmetrics_sarc_anno_2)
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width= 7, fig.height = 7, fig.align='center'}
+heatmaply_cor(
+  cor(cinmetrics_sarc_log10),
+  #xlab = "Features", 
+  #ylab = "Features"
+)
+```
+
+```{r , include=FALSE, echo=FALSE, message=FALSE}
+row.names(cinmetrics_sarc_log10) <- cinmetrics_sarc_anno$sample_id
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width= 7, fig.height = 7, fig.align='center'}
+heatmaply(cinmetrics_sarc_log10, 
+          
+  scale_fill_gradient_fun = ggplot2::scale_fill_gradient2(
+    low = "blue", 
+    high = "red", 
+    midpoint = 200, 
+    limits = c(0, 500)
+  ),
+  showticklabels = c(TRUE, FALSE),
+  scale = "column",
+  main = "ddLPS TCGA-SARC CINmetrics",
+  row_side_colors = cinmetrics_sarc_anno[, c( "Sample.Type", "HRD34")]
+  )
+```
+
+##### LMS Heatmap of the different scores 
+
+```{r , include=FALSE, echo=FALSE, message=FALSE}
+#Load data from CINmetrics annotated in python
+cinmetrics_sarc_anno <- read.csv('/Users/aliciapliego/Projects/HRDsarcoma/data/CINmetrics_annotated_sarc_LMS.tsv', sep = '\t')
+cinmetrics_sarc_anno
+cinmetrics_sarc_anno<- cinmetrics_sarc_anno[!duplicated(cinmetrics_sarc_anno), ]
+```
+
+```{r , include=FALSE, echo=FALSE, message=FALSE}
+cinmetrics_sarc_anno_2 <- cinmetrics_sarc_anno 
+rownames(cinmetrics_sarc_anno_2) -> cinmetrics_sarc_anno_2$sample_id
+cinmetrics_sarc_anno_2$sample_id <- NULL
+cinmetrics_sarc_anno_2$Tumor_type <- NULL
+cinmetrics_sarc_anno_2$Sample.Type <- NULL
+cinmetrics_sarc_anno_2$HRD34 <- NULL
+cinmetrics_sarc_log10 <- log10(cinmetrics_sarc_anno_2)
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width= 7, fig.height = 7, fig.align='center'}
+heatmaply_cor(
+  cor(cinmetrics_sarc_log10),
+  #xlab = "Features", 
+  #ylab = "Features"
+)
+```
+
+```{r , include=FALSE, echo=FALSE, message=FALSE}
+row.names(cinmetrics_sarc_log10) <- cinmetrics_sarc_anno$sample_id
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width= 7, fig.height = 7, fig.align='center'}
+heatmaply(cinmetrics_sarc_log10, 
+          
+  scale_fill_gradient_fun = ggplot2::scale_fill_gradient2(
+    low = "blue", 
+    high = "red", 
+    midpoint = 200, 
+    limits = c(0, 500)
+  ),
+  showticklabels = c(TRUE, FALSE),
+  scale = "column",
+  main = "LMS TCGA-SARC CINmetrics",
+  row_side_colors = cinmetrics_sarc_anno[, c( "Sample.Type", "HRD34")]
+  )
+```
+
+##### uLMS Heatmap of the different scores 
+
+```{r , include=FALSE, echo=FALSE, message=FALSE}
+#Load data from CINmetrics annotated in python
+cinmetrics_sarc_anno <- read.csv('/Users/aliciapliego/Projects/HRDsarcoma/data/CINmetrics_annotated_sarc_uLMS.tsv', sep = '\t')
+cinmetrics_sarc_anno
+cinmetrics_sarc_anno<- cinmetrics_sarc_anno[!duplicated(cinmetrics_sarc_anno), ]
+```
+
+```{r , include=FALSE, echo=FALSE, message=FALSE}
+cinmetrics_sarc_anno_2 <- cinmetrics_sarc_anno 
+rownames(cinmetrics_sarc_anno_2) -> cinmetrics_sarc_anno_2$sample_id
+cinmetrics_sarc_anno_2$sample_id <- NULL
+cinmetrics_sarc_anno_2$Tumor_type <- NULL
+cinmetrics_sarc_anno_2$Sample.Type <- NULL
+cinmetrics_sarc_anno_2$HRD34 <- NULL
+cinmetrics_sarc_log10 <- log10(cinmetrics_sarc_anno_2)
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width= 7, fig.height = 7, fig.align='center'}
+heatmaply_cor(
+  cor(cinmetrics_sarc_log10),
+  #xlab = "Features", 
+  #ylab = "Features"
+)
+```
+
+```{r , include=FALSE, echo=FALSE, message=FALSE}
+row.names(cinmetrics_sarc_log10) <- cinmetrics_sarc_anno$sample_id
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width= 7, fig.height = 7, fig.align='center'}
+heatmaply(cinmetrics_sarc_log10, 
+          
+  scale_fill_gradient_fun = ggplot2::scale_fill_gradient2(
+    low = "blue", 
+    high = "red", 
+    midpoint = 200, 
+    limits = c(0, 500)
+  ),
+  showticklabels = c(TRUE, FALSE),
+  scale = "column",
+  main = "uLMS TCGA-SARC CINmetrics",
+  row_side_colors = cinmetrics_sarc_anno[, c( "Sample.Type", "HRD34")]
+  )
+```
+
+##### MPNST Heatmap of the different scores 
+
+```{r , include=FALSE, echo=FALSE, message=FALSE}
+#Load data from CINmetrics annotated in python
+cinmetrics_sarc_anno <- read.csv('/Users/aliciapliego/Projects/HRDsarcoma/data/CINmetrics_annotated_sarc_MPNST.tsv', sep = '\t')
+cinmetrics_sarc_anno
+cinmetrics_sarc_anno<- cinmetrics_sarc_anno[!duplicated(cinmetrics_sarc_anno), ]
+```
+
+```{r , include=FALSE, echo=FALSE, message=FALSE}
+cinmetrics_sarc_anno_2 <- cinmetrics_sarc_anno 
+rownames(cinmetrics_sarc_anno_2) -> cinmetrics_sarc_anno_2$sample_id
+cinmetrics_sarc_anno_2$sample_id <- NULL
+cinmetrics_sarc_anno_2$Tumor_type <- NULL
+cinmetrics_sarc_anno_2$Sample.Type <- NULL
+cinmetrics_sarc_anno_2$HRD34 <- NULL
+cinmetrics_sarc_log10 <- log10(cinmetrics_sarc_anno_2)
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width= 7, fig.height = 7, fig.align='center'}
+heatmaply_cor(
+  cor(cinmetrics_sarc_log10),
+  #xlab = "Features", 
+  #ylab = "Features"
+)
+```
+
+```{r , include=FALSE, echo=FALSE, message=FALSE}
+row.names(cinmetrics_sarc_log10) <- cinmetrics_sarc_anno$sample_id
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width= 7, fig.height = 7, fig.align='center'}
+heatmaply(cinmetrics_sarc_log10, 
+          
+  scale_fill_gradient_fun = ggplot2::scale_fill_gradient2(
+    low = "blue", 
+    high = "red", 
+    midpoint = 200, 
+    limits = c(0, 500)
+  ),
+  showticklabels = c(TRUE, FALSE),
+  scale = "column",
+  main = "MPNST TCGA-SARC CINmetrics",
+  row_side_colors = cinmetrics_sarc_anno[, c( "Sample.Type", "HRD34")]
+  )
+```
+
+##### DT Heatmap of the different scores 
+
+```{r , include=FALSE, echo=FALSE, message=FALSE}
+#Load data from CINmetrics annotated in python
+cinmetrics_sarc_anno <- read.csv('/Users/aliciapliego/Projects/HRDsarcoma/data/CINmetrics_annotated_sarc_DT.tsv', sep = '\t')
+cinmetrics_sarc_anno
+cinmetrics_sarc_anno<- cinmetrics_sarc_anno[!duplicated(cinmetrics_sarc_anno), ]
+```
+
+```{r , include=FALSE, echo=FALSE, message=FALSE}
+cinmetrics_sarc_anno_2 <- cinmetrics_sarc_anno 
+rownames(cinmetrics_sarc_anno_2) -> cinmetrics_sarc_anno_2$sample_id
+cinmetrics_sarc_anno_2$sample_id <- NULL
+cinmetrics_sarc_anno_2$Tumor_type <- NULL
+cinmetrics_sarc_anno_2$Sample.Type <- NULL
+cinmetrics_sarc_anno_2$HRD34 <- NULL
+cinmetrics_sarc_log10 <- log10(cinmetrics_sarc_anno_2)
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width= 7, fig.height = 7, fig.align='center'}
+heatmaply_cor(
+  cor(cinmetrics_sarc_log10),
+  #xlab = "Features", 
+  #ylab = "Features"
+)
+```
+
+````{r , include=FALSE, echo=FALSE, message=FALSE}
+row.names(cinmetrics_sarc_log10) <- cinmetrics_sarc_anno$sample_id
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width= 7, fig.height = 7, fig.align='center'}
+heatmaply(cinmetrics_sarc_log10, 
+          
+  scale_fill_gradient_fun = ggplot2::scale_fill_gradient2(
+    low = "blue", 
+    high = "red", 
+    midpoint = 200, 
+    limits = c(0, 500)
+  ),
+  showticklabels = c(TRUE, FALSE),
+  scale = "column",
+  main = "DT TCGA-SARC CINmetrics",
+  row_side_colors = cinmetrics_sarc_anno[, c( "Sample.Type", "HRD34")]
+  )
+```
+
+#### Correlation cinmetrics and HRD
+```{r , include=FALSE, echo=FALSE, message=FALSE}
+#Load data from CINmetrics annotated in python
+cinmetrics_corr <- read.csv('/Users/aliciapliego/Projects/HRDsarcoma/data/CINmetrics_annotated_sarc_correlation_hrd.tsv', sep = '\t')
+cinmetrics_corr
+cinmetrics_corr<- cinmetrics_corr[!duplicated(cinmetrics_corr$sample_id), ]
+```
+
+````{r , include=FALSE, echo=FALSE, message=FALSE}
+cinmetrics_corr_2 <- cinmetrics_corr 
+rownames(cinmetrics_corr_2) -> cinmetrics_corr_2$sample_id
+cinmetrics_corr_2$sample_id <- NULL
+cinmetrics_corr_2$Tumor_type <- NULL
+cinmetrics_corr_2$Sample.Type <- NULL
+cinmetrics_corr_2$HRD34 <- NULL
+```
+
+```{r , include=FALSE, echo=FALSE, message=FALSE}
+row.names(cinmetrics_corr_2) <- cinmetrics_corr$sample_id
+```
+
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width= 7, fig.height = 7, fig.align='center'}
+heatmaply_cor(
+  cor(cinmetrics_corr_2),
+  #xlab = "Features", 
+  #ylab = "Features"
+)
+```
+
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width= 7, fig.height = 7, fig.align='center'}
+library(plotly)
+
+fig <- plot_ly(
+  cinmetrics_corr_2, x = ~HRDscore, y = ~break_points,
+  # Hover text:
+  text = ~rownames(cinmetrics_corr_2),
+  color = ~HRDscore, size = ~break_points
+) %>% layout(title = 'HRD34 vs Breakpoints')
+fig
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width= 7, fig.height = 7, fig.align='center'}
+fig <- plot_ly(
+  cinmetrics_corr_2, x = ~HRDscore, y = ~fga,
+  # Hover text:
+  text = ~rownames(cinmetrics_corr_2),
+  color = ~HRDscore, size = ~break_points
+) %>% layout(title = 'HRD34 vs fga')
+fig
+```
+
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width= 7, fig.height = 7, fig.align='center'}
+fig <- plot_ly(
+  cinmetrics_corr_2, x = ~HRDscore, y = ~cna,
+  # Hover text:
+  text = ~rownames(cinmetrics_corr_2),
+  color = ~HRDscore, size = ~break_points
+) %>% layout(title = 'HRD34 vs Cna')
+fig
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width= 7, fig.height = 7, fig.align='center'}
+fig <- plot_ly(
+  cinmetrics_corr_2, x = ~HRDscore, y = ~base_segments,
+  # Hover text:
+  text = ~rownames(cinmetrics_corr_2),
+  color = ~HRDscore, size = ~break_points
+) %>% layout(title = 'HRD34 vs Base_segments')
+fig
+```
+
+```{r , include=FALSE, echo=FALSE, message=FALSE}
+library(stats)
+library(tsne)
+tsne = tsne(t(cinmetrics_corr_2), initial_dims = 2, k =2) 
+tsne <- data.frame(tsne) 
+```
